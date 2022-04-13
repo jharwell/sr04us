@@ -36,15 +36,8 @@ namespace rosbridge::sr04us_driver {
 /*******************************************************************************
  * Non-Member Functions
  ******************************************************************************/
-
-float dummy_load1() {
-  return 5.12345;
-}
-
-float dummy_load2() {
-  return 6.12345;
-}
 void gpio_init(int trig, int echo)  {
+  wiringPiSetupGpio();
   pinMode(echo, INPUT);
   pinMode(trig, OUTPUT);
 }
@@ -76,13 +69,13 @@ bool report(::sr04us_driver::readings::Request &req,
             ::sr04us_driver::readings::Response &res)  {
   auto trig = req.trig;
   auto echo = req.echo;
-  // gpio_init(trig, echo)
-  // res.reading1 = distance_measure(trig, echo);
-  // res.reading2 = distance_measure(trig, echo);
-  res.reading1 = dummy_load1();
-  res.reading2 = dummy_load2();
+  gpio_init(trig, echo);
+  res.reading1 = distance_measure(trig, echo);
+  res.reading2 = distance_measure(trig, echo);
+  //res.reading1 = dummy_load1();
+  //res.reading2 = dummy_load2();
   ROS_INFO("request: Trig:%ld, Echo:%ld", (long int)req.trig, (long int)req.echo);
-  ROS_INFO("sending back reading1: [%ld]\nreading2:[%ld]", (long int)res.reading1, (long int)res.reading2);
+  ROS_INFO("sending back reading1: [%lf]\nreading2:[%lf]", (float)res.reading1, (float)res.reading2);
   return true;
 }
 
