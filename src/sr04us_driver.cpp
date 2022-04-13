@@ -1,7 +1,7 @@
 /**
- * \file client.cpp
+ * \file sr04us_driver.cpp
  *
- * \copyright 2022 Shizhi Xu, All rights reserved.
+ * \copyright 2022 John Harwell, All rights reserved.
  *
  * This file is part of ROSBRIDGE.
  *
@@ -21,12 +21,10 @@
 /*******************************************************************************
  * Includes
  ******************************************************************************/
-#include <sys/time.h>
+#include "sr04us_driver/sr04us_driver.hpp"
 
-#include <ros/ros.h>
 #include <wiringPi.h>
-
-#include "sr04us_driver/readings.h"
+#include <ros/ros.h>
 
 /*******************************************************************************
  * Namespaces/Decls
@@ -34,21 +32,19 @@
 namespace rosbridge::sr04us_driver {
 
 /*******************************************************************************
- * Non-Member Functions
+ * Free Functions
  ******************************************************************************/
-
-float dummy_load1() {
-  return 5.12345;
-}
-
-float dummy_load2() {
-  return 6.12345;
-}
-void gpio_init(int trig, int echo)  {
+static void gpio_init(int trig, int echo)  {
+  printf("Seting up GPIO\n");
+  wiringPiSetupGpio();
+  printf("Setup GPIO\n");
   pinMode(echo, INPUT);
+  printf("Setup %d as input\n", trig);
   pinMode(trig, OUTPUT);
+  printf("Setup %d as output\n", echo);
 }
-float distance_measure(int trig, int echo)    {
+
+static float distance_measure(int trig, int echo)    {
   struct timeval tv1;
   struct timeval tv2;
   long start, stop;
@@ -76,25 +72,19 @@ bool report(::sr04us_driver::readings::Request &req,
             ::sr04us_driver::readings::Response &res)  {
   auto trig = req.trig;
   auto echo = req.echo;
-  // gpio_init(trig, echo)
-  // res.reading1 = distance_measure(trig, echo);
-  // res.reading2 = distance_measure(trig, echo);
-  res.reading1 = dummy_load1();
-  res.reading2 = dummy_load2();
-  ROS_INFO("request: Trig:%ld, Echo:%ld", (long int)req.trig, (long int)req.echo);
-  ROS_INFO("sending back reading1: [%ld]\nreading2:[%ld]", (long int)res.reading1, (long int)res.reading2);
+
+  gpio_init(trig, echo);
+
+  res.reading1 = distance_measure(trig, echo);
+  res.reading2 = distance_measure(trig, echo);
+
+  ROS_INFO("request: Trig:%ld, Echo:%ld",
+           (long int)req.trig,
+           (long int)req.echo);
+  ROS_INFO("Sending back reading1: [%lf]\nreading2:[%lf]",
+           (float)res.reading1,
+           (float)res.reading2);
   return true;
 }
 
 } /* namespace rosbridge::sr04us_driver */
-
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "sr04us_driver");
-    ros::NodeHandle n;
-
-    ros::ServiceServer service = n.advertiseService("sr04us_driver", rosbridge::sr04us_driver::report);
-    ROS_INFO("Ready to send readings.");
-    ros::spin();
-
-    return 0;
-}

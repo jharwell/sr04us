@@ -1,5 +1,5 @@
 /**
- * \file client.cpp
+ * \file service.cpp
  *
  * \copyright 2022 Shizhi Xu, All rights reserved.
  *
@@ -21,41 +21,23 @@
 /*******************************************************************************
  * Includes
  ******************************************************************************/
-#include <cstdlib>
+#include <sys/time.h>
+
 #include <ros/ros.h>
 
 #include "sr04us_driver/sr04us_driver.hpp"
 
 /*******************************************************************************
- * Non-Member Functions
+ * Free Functions
  ******************************************************************************/
-
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "sr04us_driver_client");
-  if (argc != 3)  {
-    ROS_INFO("usage: sr04us_driver_client [trigger_pin] [echo_pin]");
-    return 1;
-  }
+    ros::init(argc, argv, "sr04us_service");
+    ros::NodeHandle n;
 
-  ros::NodeHandle n;
-  auto client = n.serviceClient<sr04us_driver::readings>(rosbridge::sr04us_driver::kServiceName);
-  sr04us_driver::readings srv;
-  srv.request.trig = atoll(argv[1]);
-  srv.request.echo = atoll(argv[2]);
+    auto service = n.advertiseService(rosbridge::sr04us_driver::kServiceName,
+                                      rosbridge::sr04us_driver::report);
+    ROS_INFO("Ready to send readings.");
 
-  ros::Rate rate(1); /* 1 Hz */
-
-  while (ros::ok()) {
-    if (client.call(srv))   {
-      ROS_INFO("Reading1: %lf\nReading2: %lf",
-               (float)srv.response.reading1,
-               (float)srv.response.reading2);
-    } else {
-      ROS_ERROR("Failed to call service sr04us_driver");
-    }
-    ros::spinOnce();
-    rate.sleep();
-  } /* while() */
-
-  return 0;
+    ros::spin();
+    return 0;
 }
