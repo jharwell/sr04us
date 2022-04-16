@@ -1,5 +1,5 @@
 /**
- * \file sr04us_driver.hpp
+ * \file driver.hpp
  *
  * \copyright 2022 John Harwell, All rights reserved.
  *
@@ -23,19 +23,46 @@
 /*******************************************************************************
  * Includes
  ******************************************************************************/
-#include "sr04us_driver/readings.h"
+#include "sr04us/ping.h"
+
+#include "rcppsw/er/client.hpp"
 
 /*******************************************************************************
  * Namespaces/Decls
  ******************************************************************************/
-namespace rosbridge::sr04us_driver {
+NS_START(rosbridge, sr04us);
 
-static const char kServiceName[] = "sr04us_readings";
+using ping = ::sr04us::ping;
 
 /*******************************************************************************
- * Free Functions
+ * Class Definitions
  ******************************************************************************/
-bool report(::sr04us_driver::readings::Request &req,
-            ::sr04us_driver::readings::Response &res);
+/**
+ * \class driver
+ * \ingroup rosbridge
+ *
+ * \brief Driver for the HC-SR04 ultrasonic sensor.
+ */
+class driver : public rer::client<driver> {
+ public:
+  driver(void);
 
-} /* namespace rosbridge::sr04us_driver */
+  /* Not move/copy constructable/assignable by default */
+  driver(const driver&) = delete;
+  driver& operator=(const driver&) = delete;
+  driver(driver&&) = delete;
+  driver& operator=(driver&&) = delete;
+
+  bool report(ping::Request &req, ping::Response &res);
+
+ private:
+  void gpio_configure(int trig, int echo);
+  float distance_measure(int trig, int echo);
+
+
+  /* clang-format off */
+  /* clang-format on */
+};
+
+
+NS_END(sr04us, rosbridge);

@@ -1,7 +1,7 @@
 /**
- * \file service.cpp
+ * \file ping_service.hpp
  *
- * \copyright 2022 Shizhi Xu, All rights reserved.
+ * \copyright 2022 John Harwell, All rights reserved.
  *
  * This file is part of ROSBRIDGE.
  *
@@ -18,26 +18,25 @@
  * ROSBRIDGE.  If not, see <http://www.gnu.org/licenses/
  */
 
+#pragma once
+
 /*******************************************************************************
  * Includes
  ******************************************************************************/
-#include <sys/time.h>
+#include "rcppsw/rcppsw.hpp"
 
-#include <ros/ros.h>
-
-#include "sr04us_driver/sr04us_driver.hpp"
+#include "sr04us/ping.h"
 
 /*******************************************************************************
- * Free Functions
+ * Namespaces/Decls
  ******************************************************************************/
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "sr04us_service");
-    ros::NodeHandle n;
+NS_START(rosbridge, sr04us);
 
-    auto service = n.advertiseService(rosbridge::sr04us_driver::kServiceName,
-                                      rosbridge::sr04us_driver::report);
-    ROS_INFO("Ready to send readings.");
+using ping = ::sr04us::ping;
 
-    ros::spin();
-    return 0;
-}
+/*******************************************************************************
+ * Class Definitions
+ ******************************************************************************/
+static const char kServiceName[] = "sr04us/ping";
+
+NS_END(sr04us, rosbridge);
