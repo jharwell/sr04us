@@ -43,16 +43,15 @@ driver::driver(void)
 * Member Functions
 ******************************************************************************/
 void driver::gpio_configure(int trig, int echo)  {
-  ER_DEBUG("Configuring GPIO: trig=%d, echo=%d", trig, echo);
+  ROS_DEBUG("Configuring GPIO: trig=%d, echo=%d", trig, echo);
   pinMode(echo, INPUT);
   pinMode(trig, OUTPUT);
-  ER_DEBUG("Configuring GPIO complete");
+  ROS_DEBUG("Configuring GPIO complete");
 }
 
 float driver::distance_measure(int trig, int echo)    {
   struct timeval tv1;
   struct timeval tv2;
-  long start, stop;
   float dis;
 
   // Sends ultrasonic signal
@@ -62,45 +61,52 @@ float driver::distance_measure(int trig, int echo)    {
   delayMicroseconds(10);
   digitalWrite(trig, LOW);
 
-  //Detects ultrasonic signal
+  // Detects ultrasonic signal
   auto send_start = ros::Time::now();
-  ros::Duration timeout(0.1);
-  while(!(digitalRead(echo) == 1)) {
+  ros::Duration timeout(0.5);
+
+  while (!(digitalRead(echo) == 1)) {
     if (RCPPSW_UNLIKELY(ros::Time::now() - send_start >= timeout)) {
-      ER_ERR("Unable to send ping: bad pin assignment?");
+      ROS_ERROR("Unable to send ping: bad pin assignment?");
       return -1;
     }
   } /* while() */
   gettimeofday(&tv1, NULL);
 
   auto recv_start = ros::Time::now();
-  while(!(digitalRead(echo) == 0)) {
+  while (!(digitalRead(echo) == 0)) {
     if (RCPPSW_UNLIKELY(ros::Time::now() - recv_start >= timeout)) {
-      ER_ERR("Did not receive return ping: bad pin assignment?");
+      ROS_ERROR("Did not receive return ping: bad pin assignment?");
+      return -1;
     }
   } /* while() */
   gettimeofday(&tv2, NULL);
 
-  //Measure gap of time and calculate distance
-  start = tv1.tv_sec * 1000000 + tv1.tv_usec;
-  stop  = tv2.tv_sec * 1000000 + tv2.tv_usec;
-  dis = (float)(stop - start) / 1000000 * 34000 / 2;
+  // Measure gap of time and calculate distance
+  auto start = tv1.tv_sec * 1000000 + tv1.tv_usec;
+  auto stop  = tv2.tv_sec * 1000000 + tv2.tv_usec;
+  dis = (static_cast<float>(stop - start)) / 1000000 * (34000 / 2);
 
   return dis;
 }
 
-bool driver::report(ping::Request &req,
-                    ping::Response &res)  {
+bool driver::report(PingService::Request &req,
+                    PingService::Response &res)  {
   auto trig = req.trig;
   auto echo = req.echo;
 
-  ER_INFO("Request: trig=%d, echo=%d", req.trig, req.echo);
+  ROS_INFO("Request: trig=%d, echo=%d", req.trig, req.echo);
   gpio_configure(trig, echo);
 
-  res.reading1 = distance_measure(trig, echo);
-  res.reading2 = distance_measure(trig, echo);
+  for (size_t i = 0; i < 2; ++i) {
+    PingResponse resp;
+    resp.value = distance_measure(trig, echo);
+    res.readings.push_back(resp);
+  } /* for(i..) */
 
-  ER_INFO("Response: reading1=%f, reading2=%f", res.reading1, res.reading2);
+  ROS_INFO("Response: reading1=%f, reading2=%f",
+          res.readings[0].value,
+          res.readings[1].value);
   return true;
 }
 

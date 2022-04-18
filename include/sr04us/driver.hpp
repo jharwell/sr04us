@@ -23,7 +23,7 @@
 /*******************************************************************************
  * Includes
  ******************************************************************************/
-#include "sr04us/ping.h"
+#include "sr04us/PingService.h"
 
 #include "rcppsw/er/client.hpp"
 
@@ -32,7 +32,8 @@
  ******************************************************************************/
 NS_START(rosbridge, sr04us);
 
-using ping = ::sr04us::ping;
+using PingService = ::sr04us::PingService;
+using PingResponse = ::sr04us::PingResponse;
 
 /*******************************************************************************
  * Class Definitions
@@ -53,15 +54,11 @@ class driver : public rer::client<driver> {
   driver(driver&&) = delete;
   driver& operator=(driver&&) = delete;
 
-  bool report(ping::Request &req, ping::Response &res);
+  bool report(PingService::Request &req, PingService::Response &res);
 
  private:
   void gpio_configure(int trig, int echo);
   float distance_measure(int trig, int echo);
-
-
-  /* clang-format off */
-  /* clang-format on */
 };
 
 

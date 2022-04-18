@@ -25,14 +25,15 @@
  ******************************************************************************/
 #include "rcppsw/rcppsw.hpp"
 
-#include "sr04us/ping.h"
+#include "sr04us/PingService.h"
 
 /*******************************************************************************
  * Namespaces/Decls
  ******************************************************************************/
 NS_START(rosbridge, sr04us);
 
-using ping = ::sr04us::ping;
+using PingService = ::sr04us::PingService;
+using PingResponse = ::sr04us::PingResponse;
 
 /*******************************************************************************
  * Class Definitions

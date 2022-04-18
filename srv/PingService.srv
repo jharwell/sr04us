@@ -1,0 +1,4 @@
+int32 trig
+int32 echo
+---
+sr04us/PingResponse[] readings

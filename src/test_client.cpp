@@ -38,8 +38,8 @@ int main(int argc, char **argv) {
   }
 
   ros::NodeHandle n;
-  auto client = n.serviceClient<sr04us::ping>(rosbridge::sr04us::kServiceName);
-  sr04us::ping srv;
+  auto client = n.serviceClient<sr04us::PingService>(rosbridge::sr04us::kServiceName);
+  sr04us::PingService srv;
   srv.request.trig = atoll(argv[1]);
   srv.request.echo = atoll(argv[2]);
 
@@ -48,8 +48,8 @@ int main(int argc, char **argv) {
   while (ros::ok()) {
     if (client.call(srv))   {
       ROS_INFO("Reading1: %lf Reading2: %lf",
-               (float)srv.response.reading1,
-               (float)srv.response.reading2);
+               (float)srv.response.readings[0].value,
+               (float)srv.response.readings[1].value);
     } else {
       ROS_ERROR("Failed to call service %s",
                 rosbridge::sr04us::kServiceName);
