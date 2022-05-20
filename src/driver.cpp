@@ -95,7 +95,7 @@ bool driver::report(PingService::Request &req,
   auto trig = req.trig;
   auto echo = req.echo;
 
-  ROS_INFO("Request: trig=%d, echo=%d", req.trig, req.echo);
+  ROS_DEBUG("Request: trig=%d, echo=%d", req.trig, req.echo);
   gpio_configure(trig, echo);
 
   for (size_t i = 0; i < 2; ++i) {
@@ -104,7 +104,7 @@ bool driver::report(PingService::Request &req,
     res.readings.push_back(resp);
   } /* for(i..) */
 
-  ROS_INFO("Response: reading1=%f, reading2=%f",
+  ROS_DEBUG("Response: reading1=%f, reading2=%f",
           res.readings[0].value,
           res.readings[1].value);
   return true;

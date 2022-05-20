@@ -39,8 +39,10 @@ int main(int argc, char **argv) {
   auto service = n.advertiseService(rosbridge::sr04us::kServiceName,
                                     &rosbridge::sr04us::driver::report,
                                     &driver);
-  ROS_INFO("Ready to send readings.");
-  while(ros::ok()) {
+  ROS_INFO("%s: Ready to send readings",
+           rosbridge::sr04us::kServiceName);
+
+  while (ros::ok()) {
     ros::spin();
   }
 
